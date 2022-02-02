@@ -8,7 +8,7 @@ function Counter({initialCount = 0, step = 1}) {
   // 💰 React.useReducer(countReducer, initialCount)
 
  const useStateReducer = (prevState, newState) => {
-   return newState
+   return prevState + newState
  }
 
   const [count, setCount] = React.useReducer(useStateReducer ,initialCount)
@@ -17,7 +17,7 @@ function Counter({initialCount = 0, step = 1}) {
   // changes to the next two slines of code! Remember:
   // The 1st argument is called "state" - the current value of count
   // The 2nd argument is called "newState" - the value passed to setCount
-  const increment = () => setCount(count + step)
+  const increment = () => setCount(step)
   return <button onClick={increment}>{count}</button>
 }
 
