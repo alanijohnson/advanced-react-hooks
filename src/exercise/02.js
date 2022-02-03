@@ -83,8 +83,6 @@ function PokemonInfo({pokemonName}) {
     return fetchPokemon(pokemonName)
   }, [pokemonName])
 
-  console.log(pokemonName)
-  console.log(state)
   // 🐨 this will change from "pokemon" to "data"
   const {data: pokemon, status, error} = state
 
