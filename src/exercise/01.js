@@ -7,9 +7,8 @@ function Counter({initialCount = 0, step = 1}) {
   // 🐨 replace React.useState with React.useReducer.
   // 💰 React.useReducer(countReducer, initialCount)
 
- const countReducer = (prevState, updateState) => {
-   console.log({...prevState} && updateState)
-   return {...prevState} && updateState
+ const countReducer = (state, action) => {
+   return {...state, ...action}
  }
 
   const [state, setState] = React.useReducer(countReducer , {
