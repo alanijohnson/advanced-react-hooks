@@ -31,11 +31,13 @@ function asyncReducer(state, action) {
   }
 }
 
-function useAsync(callback, dependencies) {
+function useAsync(callback, initialState, dependencies) {
+
   const [state, dispatch] = React.useReducer(asyncReducer, {
     status: 'idle',
     data: null,
     error: null,
+    ...initialState
   })
 
   React.useEffect(() => {
@@ -81,7 +83,7 @@ function PokemonInfo({pokemonName}) {
       return
     }
     return fetchPokemon(pokemonName)
-  }, [pokemonName])
+  }, {status: pokemonName ? 'pending' : 'idle'}, [pokemonName])
 
   // 🐨 this will change from "pokemon" to "data"
   const {data: pokemon, status, error} = state
