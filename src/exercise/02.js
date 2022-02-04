@@ -9,6 +9,7 @@ import {
   PokemonInfoFallback,
   PokemonErrorBoundary,
 } from '../pokemon'
+import {useEffect} from "react";
 
 // 🐨 this is going to be our generic asyncReducer
 function asyncReducer(state, action) {
@@ -31,7 +32,7 @@ function asyncReducer(state, action) {
   }
 }
 
-function useAsync(callback, initialState) {
+function useAsync(initialState) {
 
   const [state, dispatch] = React.useReducer(asyncReducer, {
     status: 'idle',
@@ -40,10 +41,9 @@ function useAsync(callback, initialState) {
     ...initialState
   })
 
-  React.useEffect(() => {
+  const run = React.useCallback((promise) => {
     // 💰 this first early-exit bit is a little tricky, so let me give you a hint:
 
-    const promise = callback()
     if (!promise) {
       return
     }
@@ -58,12 +58,10 @@ function useAsync(callback, initialState) {
         dispatch({type: 'rejected', error})
       },
     )
-    // 🐨 you'll accept dependencies as an array and pass that here.
-    // 🐨 because of limitations with ESLint, you'll need to ignore
-    // the react-hooks/exhaustive-deps rule. We'll fix this in an extra credit.
-  }, [callback])
 
-  return state
+  }, [])
+
+  return {...state, run}
 }
 
 function PokemonInfo({pokemonName}) {
@@ -83,10 +81,19 @@ function PokemonInfo({pokemonName}) {
     }
     return fetchPokemon(pokemonName) },[pokemonName])
 
-  const state = useAsync(asyncCallback, {status: pokemonName ? 'pending' : 'idle'})
+  const {data: pokemon, status, error, run} = useAsync({status: pokemonName ? 'pending' : 'idle'})
 
-  // 🐨 this will change from "pokemon" to "data"
-  const {data: pokemon, status, error} = state
+  React.useEffect(() => {
+    if (!pokemonName) {
+      return
+    }
+    // 💰 note the absence of `await` here. We're literally passing the promise
+    // to `run` so `useAsync` can attach it's own `.then` handler on it to keep
+    // track of the state of the promise.
+    const pokemonPromise = fetchPokemon(pokemonName)
+    run(pokemonPromise)
+  }, [pokemonName, run])
+
 
   switch (status) {
     case 'idle':
