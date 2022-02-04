@@ -12,6 +12,8 @@ function Counter({initialCount = 0, step = 1}) {
    switch (action.type) {
      case 'INCREMENT':
        return {...state} && {count: state.count + action.step}
+     default:
+       throw new Error('UNMATCHED ACTION TYPE')
    }
  }
 
