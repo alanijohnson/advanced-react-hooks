@@ -34,12 +34,26 @@ function asyncReducer(state, action) {
 
 function useAsync(initialState) {
 
-  const [state, dispatch] = React.useReducer(asyncReducer, {
+  const [state, unsafeDispatch] = React.useReducer(asyncReducer, {
     status: 'idle',
     data: null,
     error: null,
     ...initialState
   })
+
+  const isMounted = React.useRef(false)
+
+  React.useEffect(() => {
+    isMounted.current = true
+
+    return () => {
+      isMounted.current = false
+    }
+  }, [])
+
+  const dispatch = React.useCallback((...args) => {
+    isMounted.current && unsafeDispatch(...args)
+  },[])
 
   const run = React.useCallback((promise, isMounted) => {
     // 💰 this first early-exit bit is a little tricky, so let me give you a hint:
@@ -51,10 +65,10 @@ function useAsync(initialState) {
 
     dispatch({type: 'pending'})
     promise.then(
-      data => { isMounted &&
+      data => {
         dispatch({type: 'resolved', data})
       },
-      error => { isMounted &&
+      error => {
         dispatch({type: 'rejected', error})
       },
     )
@@ -65,7 +79,6 @@ function useAsync(initialState) {
 }
 
 function PokemonInfo({pokemonName, ref}) {
-  const isMounted = React.useRef(false)
 
   const asyncCallback = React.useCallback(() => {
     if (!pokemonName) {
@@ -83,16 +96,9 @@ function PokemonInfo({pokemonName, ref}) {
     // to `run` so `useAsync` can attach it's own `.then` handler on it to keep
     // track of the state of the promise.
     const pokemonPromise = fetchPokemon(pokemonName)
-    run(pokemonPromise, isMounted)
+    run(pokemonPromise)
   }, [pokemonName, run])
 
-  React.useEffect(() => {
-    isMounted.current = true
-
-    return () => {
-      isMounted.current = false
-    }
-  }, [])
 
 
   switch (status) {
