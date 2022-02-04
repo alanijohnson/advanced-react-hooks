@@ -41,7 +41,7 @@ function useAsync(initialState) {
     ...initialState
   })
 
-  const run = React.useCallback((promise) => {
+  const run = React.useCallback((promise, isMounted) => {
     // 💰 this first early-exit bit is a little tricky, so let me give you a hint:
 
     if (!promise) {
@@ -51,10 +51,10 @@ function useAsync(initialState) {
 
     dispatch({type: 'pending'})
     promise.then(
-      data => {
+      data => { isMounted &&
         dispatch({type: 'resolved', data})
       },
-      error => {
+      error => { isMounted &&
         dispatch({type: 'rejected', error})
       },
     )
@@ -64,16 +64,8 @@ function useAsync(initialState) {
   return {...state, run}
 }
 
-function PokemonInfo({pokemonName}) {
-  // 🐨 move all the code between the lines into a new useAsync function.
-  // 💰 look below to see how the useAsync hook is supposed to be called
-  // 💰 If you want some help, here's the function signature (or delete this
-  // comment really quick if you don't want the spoiler)!
-  // function useAsync(asyncCallback, dependencies) {/* code in here */}
-
-  // -------------------------- start --------------------------
-
-  // --------------------------- end ---------------------------
+function PokemonInfo({pokemonName, ref}) {
+  const isMounted = React.useRef(false)
 
   const asyncCallback = React.useCallback(() => {
     if (!pokemonName) {
@@ -91,8 +83,16 @@ function PokemonInfo({pokemonName}) {
     // to `run` so `useAsync` can attach it's own `.then` handler on it to keep
     // track of the state of the promise.
     const pokemonPromise = fetchPokemon(pokemonName)
-    run(pokemonPromise)
+    run(pokemonPromise, isMounted)
   }, [pokemonName, run])
+
+  React.useEffect(() => {
+    isMounted.current = true
+
+    return () => {
+      isMounted.current = false
+    }
+  }, [])
 
 
   switch (status) {
