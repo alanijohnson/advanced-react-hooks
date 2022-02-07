@@ -14,7 +14,6 @@ import {
   PokemonErrorBoundary,
 } from '../pokemon'
 import {useAsync} from '../utils'
-import {useContext} from "react";
 
 // 🐨 Create a PokemonCacheContext
 const PokemonCacheContext = React.createContext();
@@ -86,7 +85,7 @@ function PokemonInfo({pokemonName}) {
 
 function PreviousPokemon({onSelect}) {
   // 🐨 get the cache from useContext with PokemonCacheContext
-  const [cache] = React.useContext(PokemonCacheContext)
+  const [cache] = useCache()
   return (
     <div>
       Previous Pokemon
